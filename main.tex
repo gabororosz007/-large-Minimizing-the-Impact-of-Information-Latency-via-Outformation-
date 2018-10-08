@@ -1,0 +1,289 @@
+\documentclass[12pt,letterpaper]{article}
+
+% Packages that we need
+%\documentclass[12pt,letterpaper]{article}
+
+\usepackage{fullpage}
+\usepackage{amsmath,amsfonts}%%%,mlsmath}
+\usepackage{epsfig}
+\usepackage[dvips]{color}
+\usepackage[small]{caption} % allow caption customization
+\usepackage{url}
+\usepackage{wrapfig}
+\usepackage{comment}
+
+{}
+
+
+\begin{document}
+
+\title{\large Minimizing the Impact of Information Latency via ``Outformation"}
+
+\author{\normalsize Michelle Effros (Caltech), Richard M. Murray (Caltech), 
+\\ \normalsize G\'abor Orosz (Michigan), Jeffrey Scruggs (Michigan), Vijay Subramanian (Michigan)}
+
+\date{\normalsize Submitted, 16 October 2018 --- Please do not distribute} \maketitle 
+
+
+
+\section{Introduction}
+
+\textbf{[G] I copied this part from the 4-page white paper}\\
+We propose to develop a new ``outformation" approach for analyzing, designing, and implementing real-time, distributed, networked decision-making systems and other complex, networked systems with latency and bandwidth constraints. 
+
+In the traditional strategy for data gathering in distributed systems, information is collected by sensors at the edges of the network and then transmitted to one or more central processing units for interpretation and dissemination. If we imagine the sensors as the network’s ``eyes" and the central processor as the network's ``brain," information about the world flows ``in" through the eyes to the brain. While intuitive and widespread, this ``INformation" strategy is problematic both because pushing high bandwidth sensor data to the processor is expensive and because processing that data to extract the information and send it to the devices that need it is slow.
+
+The outformation model reverses this approach. Instead of using the primary information flow for the eyes to tell the brain what they see, here the brain develops a rich model of the world and uses the primary information flow to tell the eyes what they should expect to see. More precisely, a central node uses information from the edge nodes to develop and maintain an integrated, predictive model of the data and then describe this model and its updates to the edge nodes. Given these predictions, each edge node transmits to the central node only the unexpected parts of its observations. The approach is expected to work well in environments such as distributed sensor systems due to the fact that multiple devices are collecting data in a shared environment and that much of the environment changes slowly over time making the data highly predictable.
+
+The outformation model has a variety of potential advantages. By sending and updating data models rather than the data itself, we reduce the amount of information in the primary flow. By moving the network’s primary communication and computation burdens from typically information- and resource-constrained edge nodes to an information- and resource-rich central node, we reduce communication costs. By shifting the focus from information processing after to information prediction before collection of each new measurement, we reduce system latency – both in cases where the observations are well predicted by the model and in cases where recognizing the unexpected portion of the measured data is critical to the success of the mission. \\
+\textbf{[G] Copied text ends here.}
+
+
+We propose to develop a new approach to the problem of analyzing, designing and implementing complex, networked systems in the presence of information latency using the concept of ``outformation".  The basic idea of outformation, explained in more detail below, is to make use of the ability to send predictions from a central node (or nodes) out to a set of edge nodes as a means of minimizing the bandwidth and latency required to obtain robust performance of a networked decision-making system.  In essence, nodes at the edge of the network only communicate when they know that the local information that they possess is unexpected and/or necessary to accomplish a task.  This approach is motivated in part by observations of neurological systems in biology, where the flow of information often has higher density going ``out" from the brain to the sensory nodes instead of the more intuitive hypothesis that most information would be transmitted in to the brain.
+
+
+\section{Proposed Technical Approaches}
+
+\textbf{[G] I copied this part from the 4-page white paper}\\
+Recent models work to capture latency dependence using the notion of ``age of information", which models the time that elapses between information collection at a sensor and information application in a control command at some other node. If the information is held too long at a router, it “grows older” and may eventually reach an ``age" when it is no longer relevant. Unfortunately, reducing the delay at the physical layer (how fast a message can be transmitted) or increasing the throughput (how frequently messages can be transmitted), does not necessarily reduce the average age of messages since frequently transmitting large messages (many of which may be irrelevant) can cause network congestion. We therefore propose an entirely new approach, based on the outformation paradigm to manage the flow of data and control the latency in the system in a scalable manner. This paradigm naturally leads to novel technical questions, here summarized in three central thrusts: 1) Outformation \& information theory; 2) Active latency management with feedback control; and 3) Robust information transfer and update across networks.\\
+\textbf{[G] Copied text ends here.}
+
+To understand how the ``outformation" model works, we note that much of the data gathered in the type of complex, networked environment described in the previous section is redundant. This redundancy arises both from the fact that multiple devices are collecting information from a shared environment and from the fact that many aspects of that environment change slowly over time. As a result, many of the measurements made by the devices are -- to a greater or lesser extent -- predictable.  The outformation model benefits from this predictability. Here, as in the more traditional model, the central processors are charged with modeling the world. The key difference is that instead of employing the primary information flow for the eyes to tell the brain what they saw, here the brain develops a rich model of the world over time and uses this model to tell the eyes what it expects to see;  the eyes then transmit only the unexpected portion of their observations.
+
+Notice that the outformation model has a variety of potential advantages. By sending models of data to be collected rather than the data itself, we reduce the primary flow of information. Further, the primary information flow here goes from the center -- which is typically more rich in resources -- to the edges of the network. Since models can be sent in advance of the observations themselves, we also reduce the latency of the system, both in cases where the observations are well predicted by the model and in cases where recognizing the unexpected portion of the measured data is critical to the success of the mission. 
+
+
+\subsection{Outformation \& Information Theory --- Michelle}
+
+\textbf{[G] I copied this part from the 4-page white paper}\\
+As an example, consider a scenario in which a collection of independent sensors help central command to find, characterize, and track opposition resources (e.g., ships). We model sensor measurements by random processes. At a high level, we wish to understand the optimal tradeoff between central command’s speed and accuracy in data capture and the communication costs required to achieve that performance. Unfortunately, traditional information theoretic algorithms, where each encoder describes a vector of measurements gathered over a large window of time, offer no mechanism to capture the (possibly application-dependent) impact of latency. Likewise, the queue theoretic approaches typical to the age of information literature offer no mechanism for trading accuracy for speed. We here marry the best aspects of the two – treating the latency-sensitive distributed information capture question as a lossy, finite-blocklength distributed source coding problem under a new family of latency-sensitive distortion measures. Introducing latency sensitivity into the distortion measure allows the user to capture how the value of a reconstruction varies as a function of the time at which the reconstruction becomes available to the decoder. 
+
+To incorporate latency sensitivity, we allow our distortion measures to vary with the coding blocklength. More precisely, for each blocklength, $n$, a distortion measure $d_n \colon \mathcal{X}^n \times \mathcal{Y}^n \to \mathbb{R}$ is a mapping from the code's $n$-dimensional source and reproduction vectors to a real number that measures its quality. For example, in a delay-sensitive coding environment, we might move from the squared-error distortion 
+$d_n(x^n,y^n)=\sum_{i=1}^n (x_i - y_i )^2$ to a latency-sensitive alternative $d_n(x^n,y^n)=\sum_{i=1}^n c_{n,(n-i)} (x_i - y_i )^2$ with constants $\{c_{n,i}\}_{i=0}^{n-1}$ that vary with the blocklength $n$ and the time delay $n-i$ between the observation $x_i$ and its reconstruction at time $n$. When $c_{n,i}=1$ for all $(n,i)$, we recover squared error distortion. When $c_{n,i}$ is independent of $n$ and increasing in $i$, we more easily forgive inaccuracy in newer measurements than in older ones. When $c_{n,i}$ decreases in $i$ for each $n$ and increases in $n$ for each $i$, we favor more accuracy for recent symbols than for old ones (suggesting that the old information is no longer useful) and penalize long codes for the latency between new reconstructions.
+
+Since latency-sensitive distortion measures are not captured by traditional rate-distortion theory results, we here propose to derive finite-blocklength rate-distortion bounds under the point-to-point, point-to-point with decoder side information, and conditional lossy source coding models. Optimizing over the blocklength will then allow us to characterize the rate-performance tradeoff. When the side information captures the central command’s system model, deriving such bounds will enable us to compare optimal performance under the INformation and outformation models.\\
+\textbf{[G] Copied text ends here.}
+
+
+Consider a simple ``Battleship'' game, in which a collection of $J$ independent sensors (the network's ``eyes'') works to help central command (the network's ``brain'') find and track the locations of a collection of $K$ opposition resources (e.g., ships). The field of possible locations is, by assumption, extremely large when compared both to the size of the resources whose locations we hope to track and to the area that any sensor individually or even all sensors combined can view over any small block of time.
+
+For simplicity, we model the locations of the $K$ targets and the measurements captured by the $J$ sensors by random processes $L^K_1,L^K_2,\ldots$ and $M^J_1,M^J_2,\ldots$. Here 
+
+$L^K_t=(L_{1,t},\ldots,L_{K,t})$ captures the location of targets $1$ through $K$ and 
+$M^J_t=(M_{1,t},\ldots,M_{J,t})$ captures the measurements of sensors $1$ through $J$, each at time $t$. The choice to model the vector of measurements as a random process is made here in order to focus attention on the information theoretic question of how to accomplish fast and accurate information capture and to separate, at least in early investigation, that information theoretic problem from the control theoretic problem of how best to move and aim the sensors in response to what is known at each instant in time. This choice does not, however, preclude the notion that such control may be involved. For example, statistical dependence between $M^J_1, M^J_2,\ldots,$ and $L^K_1, L^J_2,\ldots$ might capture how camera locations and directions are changed in response to past measurements, which in turn depend on past ship locations.
+
+At a high level, the information capture problem aims to understand the optimal tradeoff between central control's accuracy, at each times $t$, in its (precise or distributional) estimate $\hat{L}^K_t$ of the true ship locations $L^K_t$ and the communication costs required to achieve that accuracy.
+
+It is important to point out that traditional information theoretic algorithms offer little help here. For example, strategies like Slepian-Wolf codes, which keep costs low by having each encoder jointly describe its measurement $M_{j,1},\dots,M_{j,n}$ over some large number $n$ of time steps, are poorly matched to this latency-sensitive domain. By the time the block is received and decoded (ignoring the time to decode, this would be at time $n$) there may be very little to gain in the knowledge of what happened at times $1,\ldots,n-1$.  As a result, we here propose to study alternatives to traditional INformation flow models such as Slepian-Wolf, focusing instead on new paradigms that help us make progress towards the proposed  OUTformation paradigm.   
+
+We treat information capture problem as a lossy, distributed source coding problem with a modified family of distortion measures that explicitly captures the possibility that the value of a reconstruction may vary as a function of when that reconstruction becomes available to the decoder.  To our knowledge, no such distortion measure has appeared previously in the literature.  We call the new distortion measures in this family {\em delay-sensitive distortion measures}.  We assume in the definition of delay-sensitive distortion measures that measurements are described using a blocklength-$n$ code for some integer $n$ to be optimized in the code design.  We capture the delay-sensitivity of the reconstruction by allowing the distortion measure to vary with the blocklength.  We therefore define, for each blocklength-$n$, a distortion measure 
+\begin{equation}
+d_n \colon \mathcal {X}^n \times \hat{\mathcal{X}}^n \rightarrow [0,\infty).
+\end{equation}
+For example, in a delay-sensitive coding environment, we might move from the traditional squared-error distortion measure 
+\begin{equation}
+d(x^n,\hat{x}^n)=\sum_{i=1}^n (x_i-\hat{x}_i)^2
+\end{equation}
+to a time-sensitive variation on this measure such as $\{d_n\}_{n=1}^\infty$ with 
+\begin{equation}
+d_n(x^n,\hat{x}^n)=\sum_{i=1}^n c_{n,n+1-i}(x_i-\hat{x}_i)^2
+\end{equation}
+for some constants $c_{n,1},\ldots,c_{n,n}$ that depends on the blocklength $n$ and the delay $n+1-i$ between the observation $x_i$ and its reconstruction, which for all blocklength-$n$ codes is assumed to occur (at earliest) at time $n+1$.  When $c_{n,i}=1$ for all $n$ an all $i\in[n]$, we recover the traditional squared error distortion measure.  When $c_{n,i}$ is independent of $n$ and increasing in $i$, the reconstruction of an older measurement must be more accurate than that of a more recent measurement if the two are to contribute equally to the current distortion.  When $c_{n,i}$ is decreasing in $i$ for any fixed $n$ and increasing in $n$ for any fixed $i$, we demand more accurate reconstruction of recent symbols than older symbols (suggesting that reconstructions of older symbols are no longer very useful at the decoder) and penalize codes for which the delay between new reconstructions is very large. 
+ 
+Since time-sensitive distortion measures are not captured by traditional rate-distortion theory results, we begin our investigation by tackling the rate-distortion problem for point-to-point networks in which a single transmitter describes source samples to a single receiver.  Given the dependence of our distortion measure on the blocklength of the code, finite-blocklength techniques seem particularly well-suited to finding upper and lower bounds on the optimal tradeoff between rate and (delay-sensitive) distortion for a fixed blocklength.  Combining these bounds with an optimization over the blocklength is expected to yield bounds on the optimal rate-distortion tradeoff for additive time-sensitive distortion measures such as the one described in our delay-sensitive squared-error distortion measure above.
+ 
+From the single-transmitter, single-receiver setting, we move to two variations on the point-to-point source coding problem with side information.  In the first, the side information, which here models the information collected by sensors other than the one containing our encoder, is available only to the decoder at the base station.  In the second, the side information is available to both the encoder and the decoder, modeling the scenario where the information garnered from other sensors is shared with the encoder as proposed for our outformation model.
+
+
+\subsection{Event Estimation with Outformation --- Jeff}
+
+Maybe some of the ideas Jeff talked about would fit here. As the goal is to have the information rather than the data maybe there is an ``optimal" way of distributing how to run Bayesian updates at the command center and at the sensors such that with the minimal amount of data sent each player stays well informed. This may actually give us a way to tackle the latency vs. how much information is sent trade-off. We may decide to refer to this as an ``uncertainty principle" in an event based system.
+
+
+\subsection{Active Latency Management with Feedback Control --- Gabor and Richard}
+
+\textbf{[G] I copied this part from the 4-page white paper}\\ 
+The traditional approach for network control is to consider scenarios where agents share information with each other and with the command center, and they control their motion based on the received information using centralized or decentralized protocols. Such a strategy may be feasible when agents only share limited information like their GPS position, heading direction and speed. However, in many battlefield scenarios it is beneficial to share more detailed information regarding the environment, e.g., high-resolution image data. If all agents tried to share all information in real time, bandwidth limitations would result in greatly increased latencies that lead to severe degradation of performance. 
+
+When using outformation, rather than collecting all sensory information from the agents, a model- or data-based representation of the environmental state can be sent to the agents and they only send information back that is “surprising.” For example, once one of the agents detects an adversary, it can send the sensory information to the command center. Then the center can update its representation of the overall system environment and send this to the agents (in particular those in a neighborhood of the detected adversary). This in turn will allow the agents to update their on-board motion planning and control algorithms. The assumption we exploit is that the bandwidth going out from the command center to the agents (possibly via higher bandwidth and broadcast/multicast methods) is less constrained than the information flowing from the (many) agents toward the center 
+
+In order to ensure the performance of the control system with outformation we will actively manage the latencies in the system. Conventional approaches typically focus on finding delay margins that allow control systems to maintain their performance. However, these strategies may not scale well as the amount of information increases and do not exploit the fact that not all pieces of information need to be transmitted in a fast manner. To improve the way in which information latency is managed as a fundamental resource, we will establish a ``value of fast information" for the control system. That is, given a system model, a performance specification, and a set of sensors, we will determine what information the sensors should send as a function of the latency in order to meet the specifications. This information can be used by sensor processing nodes, sensor fusion nodes, as well as network transmission and routing nodes to optimize the use of network resources. Regularly updating value of fast information in the system will allow us actively control the latencies while keeping the overall latency within a budget.
+\textbf{[G] Copied text ends here.}
+
+As an example consider the control system of $J$ agents and a command center where the state $x_j$ of the $j$th agent is governed by
+\begin{equation}
+\dot{x}_j = a_j x_j + b_j u_j + d_j
+\end{equation}
+where $u_j$ represent the controller while $d_j$ represent the disturbance. The controller may be constructed as
+\begin{equation}
+u_j = \sum_{k=1}^J \mathcal{S}_{jk} y_k
+\end{equation}
+where $y_k$ represents the information sent by the $k$-th agent and the linear operator $\mathcal{S}_{jk}$ is defined by $\mathcal{S}_{jk} y(t) = c_{jk} y(t-\tau_{jk})$. The matrices $a_j$, $b_j$ represent the system model sent to the agents from the command center while $c_{jk}$ is selected by the agents to control their motion based on the received information.
+Finally, $\tau_{jk}$ represents the latency that is subject to the dynamics
+\begin{equation}
+\dot{\tau}_{jk} = 1 + f_{jk}(\tau_{jk},T).
+\end{equation}
+The first term on right hand side represents the concept that when a message is not sent the corresponding information ``grows older" with time and hence the delay keeps increasing. That is, the second term is used to control the latency based on the value of the latency itself as well as the weighted cumulative latency $T = \sum_{j,k=1}^{J} w_{jk} \tau_{jk}$. The control objective may be to decrease the individual latencies while also keeping the weighted cumulative latency within a ``delay budget".
+
+In order to ensure performance under time delays the agents may predict the state of the system using the system model. Such problems can to be solved by Smith predictors under known constant delays but perform very poorly when the delays change in time or are not known which happened to be the case in the control system above. In order have consistent predictions, the agents will increase the delays (within the budget) to a constant value that still allow robust performance under changing environmental conditions.
+
+
+\subsection{Robust Information Transfer and Update Across Networks --- Vijay and Richard}
+
+\textbf{[G] I copied this part from the 4-page white paper}\\ 
+To realize fully the benefits of the outformation paradigm for distributed decision making in the digital battlefield, we will explore a hierarchical framework with a set of router nodes that aggregate information of sensor nodes. We will assume that the router nodes assimilate information from the sensor nodes across multiple time-slots and augment their global view via inter-router communications that take place at slower timescales. In our envisaged architecture, these router nodes will have more computing capability, memory and power, and therefore, greater functionality, when compared to the sensor nodes. 
+
+In addition, we will augment the information contained in packets transmitted across the network to reflect the latency constraints on the information. Network nodes will be able to read this header information to make decisions on how to best route the information, but will also be able to modify the information based on their own knowledge of the value of the information to the system based on the system model they receive from the central command. In this way, information latency will become an active quantity that is managed by the network, making use of latency-aware coding and latency-aware control designs.
+
+Without the outformation paradigm, all the information generated would be flooded across the network resulting in greatly increased latency. Using outformation the router nodes can greatly reduce the amount of communicated information to be sent, essentially the collective innovations obtained from all the sensor nodes in their respective purview. However, given the criticality of conveying these innovations, this also requires development of new schemes, via intelligent retransmissions or coding, to ensure reliability. We will also add a latency field in the transmitted packets, which will then be used to determine whether the information will be late or not (for the controller to take action), and which can be used to scheduling. For some specific collective tasks (e.g., distributed team coordination and control, distributed optimization), it will be better to send more than just the collective innovations. Designing an optimal scheduling, routing and resource allocation that addresses the challenges above will be the task for this question.
+%\textbf{[G] Copied text ends here.}
+
+There are several concrete scenarios where these router nodes add additional functionality, and hence lead to a new set of research questions. The router nodes will provide the following functionality, each part of which leads to a different research question that we seek to address. In order described, the tasks get more sophisticated as they're addressing more complex behaviors and objectives. These are as follows:
+\begin{enumerate}
+    \item \textit{Redundancy and error-tolerant operation: }In this task we will study the design schemes to optimally trade-off redundancy and efficiency in the transmissions of the sensor nodes, and also the design of scheduling policies at the route nodes that optimally trade-off delay and the impact of losses. The detailed description is in Section \ref{subsec:redundancy}.
+    \item \textit{Latency and value of information management: }Here we will design scheduling and routing schemes to manage the end-to-end latency at the network level. In addition to using the latency field in the packets, here we will consider the importance and relevance of the information as well. Details of the proposed ideas can be found in Section \ref{subsec:latency}.
+    \item \textit{Efficient model and content updating: }The design of efficient model and/or content delivery to sensor nodes is the focus of this task with the work delineated in Section \ref{subsec:caching}. Critical to this part would be the efficient use of the network resources by pre-populating subsets of router nodes with models needed at the sensor nodes in the near future.
+    \item \textit{Collective inference and anomalous behavior detection: }Sensing of the environment and processing the information to create a collective picture poses many new challenges, which we will address in Section \ref{subsec:inference}. Creating an accurate representation of the environment would require efficient collaborative filtering performed at the router nodes, and also distributed optimization algorithms.
+    \item \textit{Team management and coordination: }Coordination of teams of agents to transact a collective task within the outformation paradigm introduces novel research questions that we will describe in Section \ref{subsec:teams}. This higher level task requires well functioning algorithms and protocols for all the research problems defined above in this section.
+\end{enumerate}
+
+\subsubsection{Redundancy and error-tolerant operation}\label{subsec:redundancy}
+
+(Redundancy + Error-free operation) In the outformation paradigm, each sensor node will elect to transmit the innovations from its perspective to any router nodes that it is connected to. Assuming a wireless communication medium in between the sensor nodes and router nodes, there is a non-zero possibility of the communication either being corrupted or even lost; for the battlefield scenario this would be the principal setting.  This could result in severe shocks in the case this message is critical in making an assessment such as the presence of an enemy and its capabilities. In our architecture the router nodes will ensure the reliable execution of the task by collating information from many sensors and a few neighboring router nodes to form a reliable estimate of a wider geographical footprint. The router nodes can then use these collective estimates to determine which sensors to seek retransmissions from, if any are required. The information sought could be dependent on the quality of service the router node is able to achieve via collating information. Solving this requires the development of novel scheduling schemes. 
+
+The approach that we will follow for this is to use information value estimates constructed from the distortion measures developed in Section IT. Specifically, based on the information received, we will use decrease in distortion metrics (essentially gradient information) to determine the retransmission policy at the route nodes. For a router node $r$ let the set of current flows be $\mathcal{F}$ with size $|\mathcal{F}|$, the current sensor nodes connected to it being $\mathcal{C}_r$, and the neighboring router nodes being $\mathcal{N}(r)$. For flow $f$ let $\mathcal{I}_{f,r}$ be the total information received from all the sensor nodes and the neighboring router nodes. Furthermore, assume that $\mathcal{V}_{r,f} \subseteq \mathcal{C}_{r,f}$ is the set of sensor nodes whose transmissions did not arrive; we assume that this is exactly the list that has any information for flow $f$. We will assume that flow $f$ has a latency tolerance of $T_{r,f}$ at router $r$; this tolerance parameter will be determined by higher functionality tasks to be defined below. Critically, we will also assume that router $r$ has a mapping $G_f(\cdot,\cdot)$ from information received and the latency tolerance to the distortion level; this will be available as the router node will be in possession of the (current) model of the flow $f$. Using this the value of a flow receiving information from subset of sensors $W\subseteq \mathcal{C}_{r,f}$ can be determined, which we denote as $u_f(W)$. Finally, we will also assume that the router node has an estimate of the probability that transmissions by a set of sensor nodes will be successful given by $p_r(\cdot)$.
+
+We will now describe an optimization problem that will yield the flows for whom specific sensor nodes that will retransmit content. For this we will augment the agents with an additional flow $0$: since this is not a regular flow, the associated utility values will be zero. Then we will denote by $\Gamma$ the set of partitions of $\mathcal{C}_r$ into $|\mathcal{F}|+1$ parts with the $f^{\mathrm{th}}$ part being assigned to agent $f\in \{0\} \cup \mathcal{F}$. For a partition $\gamma \in \Gamma$, we define $\delta_\gamma$ to be the indicator variable ($\{0,1\}$ valued) of whether the partition is chosen or not. For a partition $\gamma$ we will denote $\gamma^f$ to be the set (of sensor nodes) associated with flow $f\in \{0\} \cup \mathcal{F}$. Then, a subset of sensors $S$ is said to belong to $\gamma$, denoted by $S\in \gamma$, if there is a flow $f$ such that $S=\gamma^f$. For a partition $\gamma$, by $\gamma^{-f}$ denote $\mathcal{C}_r\setminus \gamma^f$, i.e., sensor nodes not assigned to flow $f$. Then the optimization problem is given by
+\begin{align*}
+\max & \sum_{\gamma \in \Gamma}\delta_\gamma p_r(\gamma^{-0}) \sum_{f=1}^{|\mathcal{F}|} u_f(\gamma^f)\\
+\text{subject to } & \sum_{\gamma \in \Gamma} \delta_\gamma \leq 1
+\end{align*}
+Note that this is equivalent to picking a partition in 
+\begin{align*}
+\arg\max_{\gamma \in \Gamma} p_r(\gamma^{-0}) \sum_{f=1}^{|\mathcal{F}|} u_f(\gamma^f).
+\end{align*}
+Note also that in the current form the problem involves search over $(|\mathcal{F}|+|\mathcal{C}_r|)!/(|\mathcal{F}|)!$ many variables. Using the additive structure of distortion measures, the associated utilities also have an additive structure that will help to simplify the search space. Furthermore, with realistic simplifications for the $p_r(\cdot)$ function, such as the protocol model where more than one simultaneous transmission results in a collision, we will simplify the problem and either solve it exactly or approximate it well. It is here that the linear programming formulation would be better.
+
+\subsubsection{Latency and value of information management}\label{subsec:latency}
+
+(Latency and value of information management) As minimizing latency of message reception at either the central command center or a set of distributed command centers is a key performance objective, good design of the scheduling and routing scheme is critical. Without the outformation paradigm, all the information generated will be flooded across the network resulting in greatly increased delays. Using the outformation paradigm, however, the router nodes can greatly reduce the amount of communicated information to be sent, essentially the collective innovations obtained from all the sensor nodes in their respective purview. For some specific collective tasks though (to be discussed later on), it will be better to send more than just the collective innovations. The latency field in the transmit packets can be used to determine whether the information will be late or note (for the controller to take action. Designing an optimal scheduling, routing and resource allocation that addresses the challenges above will be the task for this question.
+
+\subsubsection{Efficient model and content updating}\label{subsec:caching}
+
+(Caching-type schemes to update models or content) The outformation paradigm relies on the sensor nodes being primed with models to determine the innovations in their measurements. As the environment changes the models will need to be changed and communicated to the sensor nodes. The distributed algorithms executed at the router nodes make an assessment of the evolving environment and can anticipate future requirements. Requests to download the models and any other required content can be made to the command center. Ensuring low latency of delivery of the content/models here will involve the design of good networking caching schemes. This will be another problem topic that we will consider.
+
+\subsubsection{Collective inference and anomalous behavior detection}\label{subsec:inference}
+
+(Collective anomalous behavior detection) Another important task is that of distributed monitoring: either determining how many friendly agents are compromised or whether enemy agents are collectively taking an action that requires a timely response. Proper execution of such a task typically involves a global/collective assessment of the views of all sensor nodes and might even involve several past views. Ensuring the correctness here is a challenging networking and scheduling problem that will critically rely on the router nodes communicating with each other and the sensor nodes under their purview. 
+
+\subsubsection{Team management and coordination}\label{subsec:teams}
+
+(Team management/coordination + Distributed optimization) One important task that we will study is the coordination of a distributed team to achieve some collective task, such as a rendezvous at a specific location by a specific time or capturing a particular target. For purposes of execution these would be formulated as distributed (stochastic) optimization problems where the sensor nodes provide information about the environment and can also take actions (e.g., actual motion or just reorienting the measurement devices). Assuming a distributed optimization setting, it is possible that at any given time some (local) variables of a subset of sensors/agents do not change much (gradient close to 0 for them) but some others at another subset of sensors/agents change dramatically (and the set of variables and sensors changes dramatically). The effectiveness of all algorithms relies on a fast-enough communication of the dramatically changed variables to all nodes (via consensus). The router nodes can ensure this via their aggregation functionality. Ensuring the correctness/effectiveness of such procedures with tight latency budgets is the research question that we will address.
+
+(Add the applications below in some detail with digital battlefield framing, expand on the points here)
+
+Ideas from Richard Murray:
+
+The concept of outformation can also be applied at the networking level [some ideas here, to be filled in by others who know more about networking]:
+Operating assumption: nodes toward the “center” (or higher in the network stack) aggregate information that is used for (still potentially distributed) fusion and decision-making.  Nodes at the edge implement protocols that are intended to send important information quickly to those who need it.  There also needs to be some sort of asymmetry, where nodes at the “center” are able to send information out (eg, via broadcast) at lower cost/lower power/higher bandwidth that nodes at the edge.
+
+Sensor nodes should be optimized to send only the information that is useful along whatever route (or routes) gets the information to the user in the quickest way possible.  Utility of information will come from the application layer, but speed of transfer will come from the network layer(s).
+
+Router nodes should send information out to sensor nodes that indicates the extent to which they can route information quickly to different users of that information.  This information might vary based on what the sensors sees and who might use it.  So the routers should be “information aware” in the sense that they are told by higher layers/more central nodes what is useful and the tradeoff between delay and utility for different types of information.
+
+NEW: Latency bounds as well as time-criticality information should be included in data streams going both into and out of the central nodes.  On possibility would be to have a “latency limit” in packets of information coming from sensor nodes that indicates how long the information is likely to be relevant to users of that information.  This latency limit could be used for a router to determine what routes information should flow or perhaps whether to drop a packet.  The header information could also be updated if a node on the network (say a router with a centralized view of what the network is doing) realizes that the information is more or less useful.
+
+A big problem that can lead to delays is the need to resend information that wasn’t received.  Using TCP, this causes delays that are on order of the round trip time.  Is there a way to avoid this without just going to UDP (which has no guaranteed delivery)?  Need something that is a hybrid of the two: here is some information that needs to get through quickly => redundantly encode/transmit to make sure that users of the data see it quickly, without sending out so much information that you use too much bandwidth.
+
+We might also want to think about power at the edge, especially for wireless nodes.  Is there a way to use less power and still send important information very quickly.  This seems like one where broadcasting from the “center” (where we can assume the power budgets are larger) should be a big help.    
+
+Comments from Vijay Subramanian (Michigan):
+
+Omission of a lead/discussion on distributed computing (cloud, edge, fog, etc.) and/or optimization. Note that this does not fit the outformation scheme well. For example, in the distributed optimization context, it is possible that at any given time some variables don't change much (gradient close to 0 for them) but some others change dramatically (and this changes dramatically). The effectiveness of all algorithms relies on a fast-enough communication of the dramatically changed variables to all nodes (via consensus).
+
+Focus on a point-to-point paradigm. Many topics in networked control systems do not fit this paradigm. Many concrete examples can be found in a distributed team setting. For example, detecting collusively/team behaviors or controlling teams. In all of these a single source-destination viewpoint will miss/will not suffice: detecting teams would need the fusion of multiple sensors and across multiple time-instances.
+
+Omission of caching type schemes. Some content/measurements may be useful to multiple nodes and multiple times for some nodes (some kind of scheme that uses existing data multiple times). Here latency can be avoided by using caching ideas and storing the information at certain points.
+
+Focus on control plane. Any data plane related content is not discussed and here outinformation wouldn't work. However, the MURI is focussed on control and computing tasks and not the transportation of data.
+
+
+\subsection{Experimental Validation of Outformation --- Gabor}
+
+To experimentally validate the theoretical results we will utilize the connected and automated vehicle testbeds in and around Ann Arbor, MI. These consist of a set of onboard and roadside units with cameras and wireless communication devices using WiFi, 4G and 5G communication. In particular we will design a set of outformation protocols (OFPs) for these units that differ from traditional TCP and UDP and evaluate the impact of these using automated vehicles.
+
+
+\subsection{Potential Impact on DoD Capabilities}
+
+Future military networks will be increasingly based on a combinations of mobile and fixed assets that must be integrated into complex systems that fuse information from a vast array of sources to create a shared representation of their environment and allow real-time, distributed decision-making in safety critical settings. Modern information sources include traditional sensory data such as imagery, radar/sonar, RF signals and other electronic signals, but also include information such as devices update (position and state), news and weather reports, and social media postings. Information is also used in a distributed fashion, with decision-making nodes existing throughout the network architecture. Latency and bandwidth are two critical properties of such networks that must be managed to allow the right information to get to the right places at the right time.
+
+Defense networks involve a diverse array of assets connected via a combination of local, service, coalition, and commercial networks, with sensor information provided from the edge and transmitted both to operations centers and to individual agents in the battlespace. Sample uses of information range from sharing of low-level sensor data between geographically proximal platforms (e.g., ships sharing Aegis data or aircraft sharing radar data) to information fusion of a large array of sensors to provide high level situational awareness across a large geographic area. Different uses of information impose different constraints on the amount and type of information that is needed, and in all cases the latency of the information must match its intended use.
+
+Current approaches to network management attempt to produce real-time and/or delay-tolerant networking that take into account issues of congestion and network disruption, but do not actively manage latency based on intended use of the information. As the number and resolution of sensory, processing, and decision-making nodes in the network increases, the challenges in providing responsive management of network resources, at all levels of the communications hierarchy, becomes increasingly important. The coherent theoretical basis developed in this project will allow management of bandwidth and latency in a manner that is tied to the real-time decision-making needs of the users.
+
+
+
+\newpage
+\section{ONR Requirements and Feedback}
+
+-1- tracking, controlling, and optimizing information latency
+
+That is the goal is not to estimate and control networks while having latency but rather estimate and control the latency itself. Still we likely going to have an underlying network with given (but time varying) topology where the agents are controlled (by controllers that we may not desing).
+\\ \quad
+
+-2- fundamental mathematical formulation for the evaluation of information latency
+\\ \quad
+
+-3- address comprehensively all aspects of the time criticality in networked communication and networked / autonomous control systems
+\\ \quad
+
+-4- methods for controlling the transmission of information in the forms of updates
+
+I guess we essentially will control the latency by simply not transmitting data when it is not necessary.
+\\ \quad
+
+-5- explore how timeliness relates to the fundamental aspects of information of signal at the source
+\\ \quad
+
+-6- explore how timeliness relates to signal uncertainty and the uncertainty principle: "A fundamental property of continuous-time signals is the Heisenberg uncertainty principle, stating that there is a basic trade-off between the spread of a signal in time and the spread of its spectrum in frequency. In particular, a continuous-time signal cannot be perfectly localized
+in both time and frequency domains."  
+
+I do not think we want to address this specific thing but rather having a version of this for event based systems could be targeted. I think this is related to the Bayesian estimation at command center vs at nodes Jeff is planning to write about. 
+\\ \quad
+
+-7- shift from the mere transport of bits to serving tasks such as control, compute, infer, estimate, reconstruct, predict and disseminate information in a timely manner
+\\ \quad
+
+OBJECTIVES
+\\ \quad
+
+1. Experimentally and theoretically explore the "network science" of information freshness and timeliness in complex communication networks. [I think we are doing this]
+\\ \quad
+
+2. Explore the relationship between signal latency and the uncertainty principle as it relates to prediction and estimation. [see -6- above]
+\\ \quad
+
+3. Develop novel and definitive ways to track, control and eventually optimize information latency in network communication. [see -1- above]
+\\ \quad
+
+
+FEEDBACK FROM ONR
+\\ \quad
+
+"... it is not clear how gracefully the technique degrades in a highly dynamic environment, nor where inflection points occur that would make this advantageous to operate.  ... stated assumption that sending and updating the data model rather than the actual data itself requires less bandwidth. [MAYBE WE SHOULD NOT SAY THIS AFTER ALL]. ... the proposal does not clearly highlight the novel aspects of robust network control that is being proposed and clearly contrast this with the current state of the art."
+\\ \quad
+
++ I think we may try to distinguish when we talk about information vs data in our proposal. In my, very naive, view we actually want agents and the command center well informed while sending as little data as possible. I also think that the "Age of Information" they referred to is in fact "Age of Data".
+\\ \quad
+
++ As I see it if one has a perfect model of the systems in the outformation setup then the systems has all the information it needs without sending a single data packet while a traditional information system would need to handle large amount of data to achieve this.
+\\ \quad
+
++ So one may say the outformation controls latency by not sending data when it is not needed. 
+\\ \quad
+
+
+%\bibliographystyle{plain}
+%\bibliography{biblio_traffic}
+
+\end{document}
